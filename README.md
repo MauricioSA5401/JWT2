@@ -87,16 +87,16 @@ npm install
 En tres terminales separadas:
 
 ```bash
-cd backend/nodo1 && node index.js
-cd backend/nodo2 && node index.js
-cd backend/nodo3 && node index.js
+cd backend/nodo1 && node server.js
+cd backend/nodo2 && node server.js
+cd backend/nodo3 && node server.js
 ```
 
 #### API Gateway
 
 ```bash
 cd backend/api-gateway
-node index.js
+node server.js
 ```
 
 #### Frontend
