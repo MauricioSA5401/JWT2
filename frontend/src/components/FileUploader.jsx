@@ -52,7 +52,7 @@ export default function FileUploader({ token, onUploadSuccess }) {
     try {
       setUploading(true);
       setProgress(0);
-
+    
       const response = await axios.post('http://localhost:4000/upload', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,20 +63,23 @@ export default function FileUploader({ token, onUploadSuccess }) {
           setProgress(percent);
         },
       });
-
+    
       if (onUploadSuccess) {
-        onUploadSuccess(response.data);
+        onUploadSuccess(response.data); // Notifica al componente padre
+      } else {
+        window.location.reload(); // Forzar recarga si no hay callback
       }
     } catch (err) {
       console.error('Upload error:', err);
       setError(
-        err.response?.data?.message || 
-        err.message || 
+        err.response?.data?.message ||
+        err.message ||
         'Error al subir el archivo'
       );
     } finally {
       setUploading(false);
     }
+    
   }, [token, onUploadSuccess]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

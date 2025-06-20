@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function FileDownloader({ token }) {
+export default function FileDownloader({ token, reloadTrigger }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState({ download: false, delete: false, general: false });
   const [error, setError] = useState(null);
@@ -25,7 +25,7 @@ export default function FileDownloader({ token }) {
 
   useEffect(() => {
     fetchFiles();
-  }, [token]);
+  }, [token, reloadTrigger]);
 
   const handleDownload = async (fileId, originalName) => {
     setLoading(prev => ({ ...prev, download: true }));

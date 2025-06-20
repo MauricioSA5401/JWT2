@@ -1,11 +1,11 @@
 [
   {
-    "fileId": "993c706334f7cd898b652f14d6c75316",
-    "originalName": "perro.png",
-    "userId": "admin",
-    "nodeUrl": "http://localhost:4002",
-    "uploadDate": "2025-06-20T14:22:39.845Z",
-    "size": 49887,
-    "mimetype": "image/png"
+    "fileId": "da8f8557260cf1c9ef27a6cbbeb9c4cc",
+    "originalName": "gatos.jpg",
+    "userId": "user4",
+    "nodeUrl": "http://localhost:4003",
+    "uploadDate": "2025-06-20T15:37:14.585Z",
+    "size": 17349,
+    "mimetype": "image/jpeg"
   }
 ]
