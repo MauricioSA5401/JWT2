@@ -141,11 +141,3 @@ Tecnológico de Estudios Superiores de Jilotepec
 
 > Este proyecto fue desarrollado como parte de una práctica académica para aplicar conceptos de redes, distribución de servicios y autenticación segura.
 
-```
-
----
-
-Cuando lo subas a GitHub, solo nómbralo `README.md` y se mostrará automáticamente en la página principal del repositorio.
-
-¿Quieres que te lo genere como archivo descargable también?
-```
