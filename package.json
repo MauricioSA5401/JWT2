@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "axios": "^1.9.0",
+    "bootstrap": "^5.3.6",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "form-data": "^4.0.3",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.1"
+    
+  },
+  
+    "name": "sistemafinal",
+    "version": "1.0.0",
+    "scripts": {
+      "start:all": "concurrently \"node api-gateway/server.js\" \"node storage-node-1/server.js\" \"node storage-node-2/server.js\" \"node storage-node-3/server.js\""
+    },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

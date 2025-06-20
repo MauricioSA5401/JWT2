@@ -1,0 +1,69 @@
+body {  
+  background-color: #000; /* Fondo negro */
+  color: #fff; /* Texto blanco */
+  background-image: none; /* Sin imagen de fondo */
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #ff0000aa); /* Sombra roja */
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #ff4500aa); /* Sombra roja más clara */
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+  background-color: #111; /* Fondo oscuro para las tarjetas */
+  border: 1px solid #ff0000; /* Borde rojo */
+  border-radius: 8px;
+}
+
+.read-the-docs {
+  color: #ff4444; /* Texto rojo */
+}
+table {
+  font-family: Arial, sans-serif;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+}
+
+button {
+  padding: 6px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+  

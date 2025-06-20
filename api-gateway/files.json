@@ -1,0 +1,47 @@
+[
+  {
+    "fileId": "1ccae88a58d00f6e9120406bedb8db3d",
+    "originalName": "CV_MauricioSanchez.pdf",
+    "userId": "user1",
+    "nodeUrl": "http://localhost:4001",
+    "uploadDate": "2025-06-19T22:15:34.804Z",
+    "size": 44783,
+    "mimetype": "application/pdf"
+  },
+  {
+    "fileId": "1ef9647d8ad9eea8e3be860793399c57",
+    "originalName": "Mauricio_Construyendo tu Ã©xito.pdf",
+    "userId": "user1",
+    "nodeUrl": "http://localhost:4002",
+    "uploadDate": "2025-06-19T22:15:41.440Z",
+    "size": 547505,
+    "mimetype": "application/pdf"
+  },
+  {
+    "fileId": "ade6420c0fc6e014f384bb64178c7070",
+    "originalName": "Mis_habilidades_e_intereses_Mauricio.pdf",
+    "userId": "user1",
+    "nodeUrl": "http://localhost:4003",
+    "uploadDate": "2025-06-19T22:21:13.441Z",
+    "size": 401457,
+    "mimetype": "application/pdf"
+  },
+  {
+    "fileId": "9b6db609b7a08b42d1a10cff1a924687",
+    "originalName": "Modelos a seguir.pdf",
+    "userId": "user3",
+    "nodeUrl": "http://localhost:4001",
+    "uploadDate": "2025-06-20T01:45:23.497Z",
+    "size": 308767,
+    "mimetype": "application/pdf"
+  },
+  {
+    "fileId": "b46252813d9c9abb84438c4b19873226",
+    "originalName": "Solicitud se servcio social.pdf",
+    "userId": "user3",
+    "nodeUrl": "http://localhost:4002",
+    "uploadDate": "2025-06-20T01:45:32.588Z",
+    "size": 440413,
+    "mimetype": "application/pdf"
+  }
+]
