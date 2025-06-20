@@ -25,6 +25,7 @@ const STORAGE_NODES = ['http://localhost:4001', 'http://localhost:4002', 'http:/
 let uploadedFiles = [];
 let currentNodeIndex = 0;
 
+// Cargar archivos existentes
 try {
   if (fs.existsSync(FILES_DB)) {
     uploadedFiles = JSON.parse(fs.readFileSync(FILES_DB, 'utf8'));
@@ -33,6 +34,7 @@ try {
   console.error('Error al cargar archivos:', err);
 }
 
+// Funciones auxiliares
 function readUsers() {
   try {
     const data = fs.readFileSync(USERS_FILE, 'utf8');
@@ -59,24 +61,26 @@ function saveUploadedFiles() {
   }
 }
 
+// Middleware de autenticación
 function verifyToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).send('Token missing');
+  if (!authHeader) return res.status(401).json({ error: 'Token missing' });
   const token = authHeader.split(' ')[1];
-  if (!token) return res.status(403).send('Access denied');
+  if (!token) return res.status(403).json({ error: 'Access denied' });
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.status(403).send('Invalid token');
+    if (err) return res.status(403).json({ error: 'Invalid token' });
     req.user = user;
     next();
   });
 }
 
+// Endpoints
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
   const users = readUsers();
   const user = users.find(u => u.username === username && u.password === password);
-  if (!user) return res.status(401).json({ message: 'Credenciales inválidas' });
+  if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
   const token = jwt.sign({ userId: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
   res.json({ token });
 });
@@ -85,7 +89,7 @@ app.post('/register', (req, res) => {
   const { username, password } = req.body;
   const users = readUsers();
   if (users.find(u => u.username === username)) {
-    return res.status(400).json({ message: 'Usuario ya existe' });
+    return res.status(400).json({ error: 'Usuario ya existe' });
   }
   const newUser = { id: `user${users.length + 1}`, username, password };
   users.push(newUser);
@@ -94,7 +98,8 @@ app.post('/register', (req, res) => {
 });
 
 app.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
-  if (!req.file) return res.status(400).send('No se recibió archivo');
+  if (!req.file) return res.status(400).json({ error: 'No se recibió archivo' });
+  
   const nodeUrl = STORAGE_NODES[currentNodeIndex];
   currentNodeIndex = (currentNodeIndex + 1) % STORAGE_NODES.length;
 
@@ -113,7 +118,7 @@ app.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
       originalName: req.file.originalname,
       userId: req.user.userId,
       nodeUrl,
-      uploadDate: response.data.uploadDate || new Date().toISOString(),
+      uploadDate: new Date().toISOString(),
       size: req.file.size,
       mimetype: req.file.mimetype
     };
@@ -121,51 +126,65 @@ app.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     uploadedFiles.push(fileInfo);
     saveUploadedFiles();
     fs.unlink(req.file.path, () => {});
-    res.status(200).json({ message: 'Archivo subido exitosamente', fileId: response.data.fileId });
+    res.json({ message: 'Archivo subido exitosamente', fileId: fileInfo.fileId });
   } catch (error) {
     console.error('Error al subir archivo:', error);
-    res.status(500).send('Error al enviar archivo al nodo');
+    res.status(500).json({ 
+      error: 'Error al enviar archivo al nodo',
+      details: error.response?.data || error.message
+    });
   }
 });
 
 app.get('/files', verifyToken, (req, res) => {
-  const files = uploadedFiles.filter(file => file.userId === req.user.userId);
-  res.json(files);
+  const userFiles = uploadedFiles.filter(file => file.userId === req.user.userId);
+  res.json(userFiles);
 });
 
 app.get('/file/:fileId', verifyToken, async (req, res) => {
   const file = uploadedFiles.find(f => f.fileId === req.params.fileId && f.userId === req.user.userId);
-  if (!file) return res.status(404).send('Archivo no encontrado');
+  if (!file) return res.status(404).json({ error: 'Archivo no encontrado' });
 
   try {
-    const response = await axios({
-      method: 'get',
-      url: `${file.nodeUrl}/files/${file.fileId}`,
+    const response = await axios.get(`${file.nodeUrl}/file/${file.fileId}`, {
       responseType: 'stream'
     });
+
     res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
     if (file.mimetype) res.setHeader('Content-Type', file.mimetype);
     response.data.pipe(res);
   } catch (error) {
     console.error('Error al descargar archivo:', error);
-    res.status(500).send('Error al descargar archivo del nodo');
+    res.status(500).json({ 
+      error: 'Error al descargar archivo del nodo',
+      details: error.response?.data || error.message
+    });
   }
 });
 
 app.delete('/file/:fileId', verifyToken, async (req, res) => {
-  const index = uploadedFiles.findIndex(f => f.fileId === req.params.fileId && f.userId === req.user.userId);
-  if (index === -1) return res.status(404).send('Archivo no encontrado');
+  const fileIndex = uploadedFiles.findIndex(f => f.fileId === req.params.fileId && f.userId === req.user.userId);
+  if (fileIndex === -1) return res.status(404).json({ error: 'Archivo no encontrado' });
 
-  const file = uploadedFiles[index];
+  const file = uploadedFiles[fileIndex];
   try {
-    await axios.delete(`${file.nodeUrl}/files/${file.fileId}`);
-    uploadedFiles.splice(index, 1);
+    await axios.delete(`${file.nodeUrl}/file/${file.fileId}`);
+    uploadedFiles.splice(fileIndex, 1);
     saveUploadedFiles();
-    res.status(200).send('Archivo eliminado');
+    res.json({ message: 'Archivo eliminado correctamente' });
   } catch (error) {
     console.error('Error al eliminar archivo:', error);
-    res.status(500).send('Error al eliminar archivo del nodo');
+    res.status(500).json({ 
+      error: 'Error al eliminar archivo del nodo',
+      details: error.response?.data || error.message
+    });
   }
+});
+
+// Manejo de errores global
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Error interno del servidor' });
 });
 
 app.listen(PORT, () => {

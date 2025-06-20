@@ -6,29 +6,29 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-
-// Configuración de Multer con límites y validación
-const upload = multer({
-  dest: 'uploads/',
-  limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB límite
-    files: 1
-  },
-  fileFilter: (req, file, cb) => {
-    // Validar tipos de archivo si es necesario
-    cb(null, true);
-  }
-});
+app.use(express.json());
 
 const PORT = process.env.PORT || 4001;
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
-// Crear directorio de uploads si no existe
+// Crear directorio si no existe
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-// Middleware para log de solicitudes
+// Configuración de Multer
+const upload = multer({
+  dest: UPLOADS_DIR,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB
+    files: 1
+  },
+  fileFilter: (req, file, cb) => {
+    cb(null, true);
+  }
+});
+
+// Middleware de logs
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
@@ -45,51 +45,47 @@ app.post('/store', upload.single('file'), (req, res) => {
     originalName: req.file.originalname,
     size: req.file.size,
     mimetype: req.file.mimetype,
-    uploadDate: new Date().toISOString()
+    uploadDate: new Date().toISOString(),
+    userId: req.body.userId
   };
 
-  // Guardar metadatos adicionales (opcional)
+  // Guardar metadatos
   const metaPath = path.join(UPLOADS_DIR, `${req.file.filename}.meta`);
   fs.writeFileSync(metaPath, JSON.stringify(fileInfo));
 
-  res.status(200).json(fileInfo);
+  res.status(201).json(fileInfo);
 });
 
 // Endpoint para descargar archivos
-app.get('/files/:fileId', (req, res) => {
+app.get('/file/:fileId', (req, res) => {
   const filePath = path.join(UPLOADS_DIR, req.params.fileId);
   
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'Archivo no encontrado' });
   }
 
-  // Intentar obtener el nombre original si existe
+  // Leer metadatos
   const metaPath = path.join(UPLOADS_DIR, `${req.params.fileId}.meta`);
   let originalName = req.params.fileId;
-  let headers = {};
+  let contentType = 'application/octet-stream';
 
   if (fs.existsSync(metaPath)) {
     try {
       const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
       originalName = meta.originalName || originalName;
-      if (meta.mimetype) {
-        headers['Content-Type'] = meta.mimetype;
-      }
+      contentType = meta.mimetype || contentType;
     } catch (err) {
       console.error('Error al leer metadatos:', err);
     }
   }
 
-  res.set({
-    ...headers,
-    'Content-Disposition': `attachment; filename="${originalName}"`
-  });
-
+  res.setHeader('Content-Disposition', `attachment; filename="${originalName}"`);
+  res.setHeader('Content-Type', contentType);
   res.sendFile(filePath);
 });
 
 // Endpoint para eliminar archivos
-app.delete('/files/:fileId', (req, res) => {
+app.delete('/file/:fileId', (req, res) => {
   const filePath = path.join(UPLOADS_DIR, req.params.fileId);
   const metaPath = path.join(UPLOADS_DIR, `${req.params.fileId}.meta`);
 
@@ -99,23 +95,21 @@ app.delete('/files/:fileId', (req, res) => {
 
   try {
     fs.unlinkSync(filePath);
-    // Eliminar metadatos si existen
     if (fs.existsSync(metaPath)) {
       fs.unlinkSync(metaPath);
     }
-    res.sendStatus(204); // 204 No Content
+    res.json({ message: 'Archivo eliminado correctamente' });
   } catch (err) {
     console.error('Error al eliminar archivo:', err);
     res.status(500).json({ error: 'Error al eliminar archivo' });
   }
 });
 
-// Middleware para manejo de errores
+// Manejo de errores
 app.use((err, req, res, next) => {
   console.error(err.stack);
   
   if (err instanceof multer.MulterError) {
-    // Errores específicos de Multer
     return res.status(400).json({ 
       error: 'Error al subir archivo',
       details: err.code === 'LIMIT_FILE_SIZE' ? 'El archivo es demasiado grande' : err.message
